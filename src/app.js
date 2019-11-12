@@ -1,5 +1,14 @@
 const express = require("express")
+const mongoose = require("mongoose")
 const app = express()
+
+mongoose.connect("mongodb://localhost:27017/reprograma", {useNewUrlParser: true});
+
+let db = mongoose.connection;
+db.on("error", console.log.bind(console,"connection error:"))  //caso ocorra um erro de conexão
+db.once("open", function (){   //em caso de sucesso da conexão
+  console.log("Conexão com o MongoDB estabelecida com sucesso.")
+})
 
 //rotas
 const index = require("./routes/index")

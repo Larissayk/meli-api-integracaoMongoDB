@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const alunasSchema = new mongoose.Schema({
   nome: { type: String, required: true },
-  dateOfBirth: { type: Date },
+  dateOfBirth: { type: String },
   nasceuEmSp: { type: Boolean },
   livros: [
     {

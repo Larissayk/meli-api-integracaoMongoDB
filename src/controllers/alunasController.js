@@ -13,49 +13,93 @@ exports.get = (req, res) => {
 };
 
 exports.getById = (req, res) => {
-  const id = req.params.id;
-  if (id > 34 || id <= 0) {
-    res.redirect(301, "https://en.wikipedia.org/wiki/Man-in-the-middle_attack");
-  }
-  res.status(200).send(alunas.find(aluna => aluna.id == id));
+  const alunaId = req.params.id;
+  Alunas.findById(alunaId, function(err, aluna) {
+    if (err) return res.status(500).send(err.message);
+    if (!aluna) {
+      return res
+        .status(404)
+        .send({
+          message: `Infelizmente não foi possível localizar a aluna de id ${alunaId}`
+        });
+    }
+    res.status(200).send(aluna);
+  });
+
+  // const id = req.params.id;
+  // if (id > 34 || id <= 0) {
+  //   res.redirect(301, "https://en.wikipedia.org/wiki/Man-in-the-middle_attack");
+  // }
+  // res.status(200).send(alunas.find(aluna => aluna.id == id));
 };
 
 exports.getBooks = (req, res) => {
-  const id = req.params.id;
-  const aluna = alunas.find(aluna => aluna.id == id);
+const id = req.params.id;
+Alunas.findById(id, function(err, aluna) {
+  if (err) return res.status(500).send(err.message);
   if (!aluna) {
-    res.send("Nao encontrei essa garota");
-  }
-  const livrosAluna = aluna.livros;
-  const livrosLidos = livrosAluna.filter(livro => livro.leu == "true");
+      res.send("Nao encontrei essa aluna");
+    }
+    const livrosAluna = aluna.livros;
+  const livrosLidos = livrosAluna.filter(livro => livro.leu == true);
   const tituloLivros = livrosLidos.map(livro => livro.titulo);
   res.send(tituloLivros);
-};
+
+  // const id = req.params.id;
+  // const aluna = alunas.find(aluna => aluna.id == id);
+  // if (!aluna) {
+  //   res.send("Nao encontrei essa garota");
+  // }
+  // const livrosAluna = aluna.livros;
+  // const livrosLidos = livrosAluna.filter(livro => livro.leu == "true");
+  // const tituloLivros = livrosLidos.map(livro => livro.titulo);
+  // res.send(tituloLivros);
+})};
 
 exports.getSp = (req, res) => {
-  Alunas.find(function(err, alunas) {   //função callback, fica esperando o retorno do banco
-    if(err) res.status(500).send(err);
-    const nasceuSp = alunas.filter(aluna => aluna.nasceuEmSp == true)
-    console.log(nasceuSp);
-
-    const meninasSp = nasceuSp.map(aluna => aluna.nome);
-    console.log(meninasSp);
-
-    res.status(200).send(meninasSp);
+  Alunas.find({ nasceuEmSp: true }, function(err, alunas) {   //outra forma de buscar passando o filtro no método do mongo
+    if (err) return res.status(500).send(err);
+    console.log(alunas);
+    const nasceuSP = alunas.map(aluna => aluna.nome);
+    res.status(200).send(nasceuSP);
   });
+  // Alunas.find(function(err, alunas) {  //função callback, fica esperando o retorno do banco
+  //   if (err) res.status(500).send(err);
+  //   const nasceuSp = alunas.filter(aluna => aluna.nasceuEmSp == true);
+  //   console.log(nasceuSp);
+
+  //   const meninasSp = nasceuSp.map(aluna => aluna.nome);
+  //   console.log(meninasSp);
+
+  //   res.status(200).send(meninasSp);
+  // });
 };
 
 exports.getAge = (req, res) => {
   const id = req.params.id;
-  const aluna = alunas.find(item => item.id == id);
-  const dataNasc = aluna.dateOfBirth;
-  const arrData = dataNasc.split("/");
-  const dia = arrData[0];
-  const mes = arrData[1];
-  const ano = arrData[2];
-  const idade = calcularIdade(ano, mes, dia);
-  res.status(200).send({ idade });
-};
+  Alunas.findById(id, function(err, aluna) {
+    if (err) return res.status(500).send(err.message);
+    if (!aluna) {
+      res.send("Nao encontrei essa aluna");
+    }
+    const dataNasc = aluna.dateOfBirth;
+    const arrData = dataNasc.split("/");
+    const dia = arrData[0];
+    const mes = arrData[1];
+    const ano = arrData[2];
+    const idade = calcularIdade(ano, mes, dia);
+    res.status(200).send({ idade });
+
+  // const id = req.params.id;
+  // const aluna = alunas.find(item => item.id == id);
+  // const dataNasc = aluna.dateOfBirth;
+  // const arrData = dataNasc.split("/");
+  // const dia = arrData[0];
+  // const mes = arrData[1];
+  // const ano = arrData[2];
+  // const idade = calcularIdade(ano, mes, dia);
+  // res.status(200).send({ idade });
+})};
 
 function calcularIdade(anoDeNasc, mesDeNasc, diaDeNasc) {
   const now = new Date();
@@ -71,6 +115,8 @@ function calcularIdade(anoDeNasc, mesDeNasc, diaDeNasc) {
   return idade;
 }
 
+//------------------------------------------------------------------------------------------------------------
+//POST
 exports.post = (req, res) => {
   const { nome, dateOfBirth, nasceuEmSp, id, livros } = req.body;
   alunas.push({ nome, dateOfBirth, nasceuEmSp, id, livros });

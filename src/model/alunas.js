@@ -6,10 +6,12 @@ const alunasSchema = new mongoose.Schema({
   nasceuEmSp: { type: Boolean },
   livros: [
     {
+      _id:false,
       titulo: String,
       leu: Boolean
-    }
-  ]
+    }]
+  },{
+    versionKey:false
 });
 
 const Alunas = mongoose.model("Alunas", alunasSchema);  //indicando para o mongoose que o Schema está relacionado a model "alunas"

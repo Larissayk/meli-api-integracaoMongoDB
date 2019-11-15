@@ -17,11 +17,9 @@ exports.getById = (req, res) => {
   Alunas.findById(alunaId, function(err, aluna) {
     if (err) return res.status(500).send(err.message);
     if (!aluna) {
-      return res
-        .status(404)
-        .send({
-          message: `Infelizmente não foi possível localizar a aluna de id ${alunaId}`
-        });
+      return res.status(404).send({
+        message: `Infelizmente não foi possível localizar a aluna de id ${alunaId}`
+      });
     }
     res.status(200).send(aluna);
   });
@@ -34,30 +32,32 @@ exports.getById = (req, res) => {
 };
 
 exports.getBooks = (req, res) => {
-const id = req.params.id;
-Alunas.findById(id, function(err, aluna) {
-  if (err) return res.status(500).send(err.message);
-  if (!aluna) {
+  const id = req.params.id;
+  Alunas.findById(id, function(err, aluna) {
+    if (err) return res.status(500).send(err.message);
+    if (!aluna) {
       res.send("Nao encontrei essa aluna");
     }
     const livrosAluna = aluna.livros;
-  const livrosLidos = livrosAluna.filter(livro => livro.leu == true);
-  const tituloLivros = livrosLidos.map(livro => livro.titulo);
-  res.send(tituloLivros);
+    const livrosLidos = livrosAluna.filter(livro => livro.leu == true);
+    const tituloLivros = livrosLidos.map(livro => livro.titulo);
+    res.send(tituloLivros);
 
-  // const id = req.params.id;
-  // const aluna = alunas.find(aluna => aluna.id == id);
-  // if (!aluna) {
-  //   res.send("Nao encontrei essa garota");
-  // }
-  // const livrosAluna = aluna.livros;
-  // const livrosLidos = livrosAluna.filter(livro => livro.leu == "true");
-  // const tituloLivros = livrosLidos.map(livro => livro.titulo);
-  // res.send(tituloLivros);
-})};
+    // const id = req.params.id;
+    // const aluna = alunas.find(aluna => aluna.id == id);
+    // if (!aluna) {
+    //   res.send("Nao encontrei essa garota");
+    // }
+    // const livrosAluna = aluna.livros;
+    // const livrosLidos = livrosAluna.filter(livro => livro.leu == "true");
+    // const tituloLivros = livrosLidos.map(livro => livro.titulo);
+    // res.send(tituloLivros);
+  });
+};
 
 exports.getSp = (req, res) => {
-  Alunas.find({ nasceuEmSp: true }, function(err, alunas) {   //outra forma de buscar passando o filtro no método do mongo
+  Alunas.find({ nasceuEmSp: true }, function(err, alunas) {
+    //outra forma de buscar passando o filtro no método do mongo
     if (err) return res.status(500).send(err);
     console.log(alunas);
     const nasceuSP = alunas.map(aluna => aluna.nome);
@@ -90,16 +90,17 @@ exports.getAge = (req, res) => {
     const idade = calcularIdade(ano, mes, dia);
     res.status(200).send({ idade });
 
-  // const id = req.params.id;
-  // const aluna = alunas.find(item => item.id == id);
-  // const dataNasc = aluna.dateOfBirth;
-  // const arrData = dataNasc.split("/");
-  // const dia = arrData[0];
-  // const mes = arrData[1];
-  // const ano = arrData[2];
-  // const idade = calcularIdade(ano, mes, dia);
-  // res.status(200).send({ idade });
-})};
+    // const id = req.params.id;
+    // const aluna = alunas.find(item => item.id == id);
+    // const dataNasc = aluna.dateOfBirth;
+    // const arrData = dataNasc.split("/");
+    // const dia = arrData[0];
+    // const mes = arrData[1];
+    // const ano = arrData[2];
+    // const idade = calcularIdade(ano, mes, dia);
+    // res.status(200).send({ idade });
+  });
+};
 
 function calcularIdade(anoDeNasc, mesDeNasc, diaDeNasc) {
   const now = new Date();
@@ -118,44 +119,70 @@ function calcularIdade(anoDeNasc, mesDeNasc, diaDeNasc) {
 //------------------------------------------------------------------------------------------------------------
 //POST
 exports.post = (req, res) => {
-  const { nome, dateOfBirth, nasceuEmSp, id, livros } = req.body;
-  alunas.push({ nome, dateOfBirth, nasceuEmSp, id, livros });
+  let aluna = new Alunas(req.body);
 
-  fs.writeFile(
-    "./src/model/alunas.json",
-    JSON.stringify(alunas),
-    "utf8",
-    function(err) {
-      if (err) {
-        return res.status(500).send({ message: err });
-      }
-      console.log("The file was saved!");
-    }
-  );
+  aluna.save(function(err) {
+    if (err) res.status(500).send(err);
 
-  return res.status(201).send(alunas);
+    res.status(201).send(aluna);
+  });
+
+  // const { nome, dateOfBirth, nasceuEmSp, id, livros } = req.body;
+  // alunas.push({ nome, dateOfBirth, nasceuEmSp, id, livros });
+
+  // fs.writeFile(
+  //   "./src/model/alunas.json",
+  //   JSON.stringify(alunas),
+  //   "utf8",
+  //   function(err) {
+  //     if (err) {
+  //       return res.status(500).send({ message: err });
+  //     }
+  //     console.log("The file was saved!");
+  //   }
+  // );
+
+  // return res.status(201).send(alunas);
 };
 
 exports.postBooks = (req, res) => {
   const id = req.params.id;
-  const aluna = alunas.find(aluna => aluna.id == id);
-  if (!aluna) {
-    res.send("Nao encontrei essa garota");
-  }
-  const { titulo, leu } = req.body;
-  alunas[aluna.id - 1].livros.push({ titulo, leu });
-
-  fs.writeFile(
-    "./src/model/alunas.json",
-    JSON.stringify(alunas),
-    "utf8",
-    function(err) {
-      if (err) {
-        return res.status(500).send({ message: err });
-      }
-      console.log("The file was saved!");
+  Alunas.findById(id, function(err, aluna) {
+    if (err) return res.status(500).send(err.message);
+    if (!aluna) {
+      return res.send("Nao encontrei essa aluna");
     }
-  );
 
-  res.status(201).send(alunas[aluna.id - 1].livros);
+    const livro = req.body;
+    aluna.livros.push(livro);
+
+    aluna.save(function(err) {
+      if (err) res.status(500).send(err);
+
+      res.status(201).send(aluna);
+    });
+  });
 };
+
+// const id = req.params.id;
+// const aluna = alunas.find(aluna => aluna.id == id);
+// if (!aluna) {
+//   res.send("Nao encontrei essa garota");
+// }
+// const { titulo, leu } = req.body;
+// alunas[aluna.id - 1].livros.push({ titulo, leu });
+
+//   fs.writeFile(
+//     "./src/model/alunas.json",
+//     JSON.stringify(alunas),
+//     "utf8",
+//     function(err) {
+//       if (err) {
+//         return res.status(500).send({ message: err });
+//       }
+//       console.log("The file was saved!");
+//     }
+//   );
+
+//   res.status(201).send(alunas[aluna.id - 1].livros);
+// }

@@ -186,3 +186,12 @@ exports.postBooks = (req, res) => {
 
 //   res.status(201).send(alunas[aluna.id - 1].livros);
 // }
+
+//PUT
+
+exports.updateAlunas = (req, res) => {
+  Alunas.update({ _id: req.params.id }, { $set: req.body }, function(err, alunas) {
+    if (err) return res.status(500).send(err);
+    res.status(204).send(`Registro da aluna foi atualizado com sucesso!`);
+  });
+};

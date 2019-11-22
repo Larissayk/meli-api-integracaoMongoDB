@@ -190,8 +190,32 @@ exports.postBooks = (req, res) => {
 //PUT
 
 exports.updateAlunas = (req, res) => {
-  Alunas.update({ _id: req.params.id }, { $set: req.body }, function(err, alunas) {
+  Alunas.update({ _id: req.params.id }, { $set: req.body }, function(
+    err,
+    alunas
+  ) {
     if (err) return res.status(500).send(err);
     res.status(204).send(`Registro da aluna foi atualizado com sucesso!`);
+  });
+};
+
+//DELETE
+exports.deleteAluna = (req, res) => {
+  const alunaId = req.params.id;
+  Alunas.findById(alunaId, function(err, aluna) {
+    if (err) return res.status(500).send(err);
+    if (!aluna) {
+      return res
+        .status(200)
+        .send({
+          message: `Infelizmente não foi possível encontrar a aluna de id ${aluna._id}`
+        });
+    }
+
+    aluna.remove(function(err) {
+      if (!err) {
+        res.status(204).send({ message: `Aluna removida com sucesso` });
+      }
+    });
   });
 };
